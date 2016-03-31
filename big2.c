@@ -27,7 +27,7 @@ Ordem dos valores das cartas
 
 /**
           Estrutura de dados onde estão armazenados (e vão sendo
-          atualizados) todas as informações relativas ao estado 
+          atualizados) todas as informações relativas ao estado
           do jogo, respetivamente:mãos dos jogadores;tamanho de
           cada mão;cartas selecionadas pelo jogador;ultima jogada;
           ultimo jogador;ultima ação;numero de jogadores que passaram
@@ -62,13 +62,14 @@ long long unsigned int ajudaMJogada (long long unsigned int sel, long long unsig
 
 /** \brief Função principal
 
-          Função principal do programa que inicializa a estrutura 
-          de dados toda a zero, lê da query o estado e atualiza a 
-          estrutura com as informações atuais do mesmo. 
-          Função que vai imprimir o código html para desenhar as 
+          Função principal do programa que inicializa a estrutura
+          de dados toda a zero, lê da query o estado e atualiza a
+          estrutura com as informações atuais do mesmo.
+          Função que vai imprimir o código html para desenhar as
           cartas e toda mesa de jogo propriamente dita.
  */
 int main() {
+    int winner = 4;
 
     ESTADO e;
     e.mao[0] = 0; e.mao[1] = 0; e.mao[2] = 0; e.mao[3] = 0;
@@ -77,8 +78,6 @@ int main() {
     e.bots[0] = 0; e.bots[1] = 0; e.bots[2] = 0;
     e.acao='n';
     e.nPass=0;
-    int winner = 4;
-    char *estado;
 
     printf("Content-Type: text/html; charset=utf-8\n\n");
 
@@ -86,7 +85,6 @@ int main() {
     if (e.uJogador != 3) jogar(e.mao, e.tamanho, &e.selecao, &e.uJogada, &e.uJogador, &e.acao, &e.nPass, e.bots);
     if (e.nPass==3) {e.uJogada=0;e.nPass=0;}
     if (e.tamanho[0] == 0) winner = 0; else if (e.tamanho[1] == 0) winner =1; else if (e.tamanho[2] == 0) winner = 2; else if (e.tamanho[3] == 0) winner = 3;
-    estado = da_estado(e);
     imprime(BARALHO,e,winner);
 
     return 0;
@@ -203,7 +201,7 @@ long long unsigned int del_cartas(long long unsigned int cartas, long long unsig
 	return m & ~(cartas);
 }
 
-/** \brief Seleciona ou remove da seleção uma carta 
+/** \brief Seleciona ou remove da seleção uma carta
 
 @param ESTADO    O estado do jogo
 @param naipe    O naipe da carta (inteiro entre 0 e 3)
@@ -238,7 +236,7 @@ int carta_existe(long long unsigned int m, int naipe, int valor) {
 }
 
 /** \brief Imprime o html correspondente ao botão passar e ao botão jogar
-@param ESTADO    O estado do jogo
+@param e    O estado do jogo
 */
 void imprime_botoes(ESTADO e) {
     char scriptPassa[10240];
@@ -249,9 +247,9 @@ void imprime_botoes(ESTADO e) {
         sprintf(scriptJoga, QUERY, SCRIPT, del_cartas(e.selecao, e.mao[0]), e.mao[1], e.mao[2], e.mao[3], contaUns(del_cartas(e.selecao, e.mao[0])), e.tamanho[1], e.tamanho[2], e.tamanho[3],(unsigned long long) 0,e.selecao,0,'j',0,e.bots[0],e.bots[1],e.bots[2]);
         printf("<a xlink:href = \"%s\"><image x=\"590\" y=\"700\" height=\"40\" width=\"206\" xlink:href = http://127.0.0.1/cards/Jogar.png /></a>\n", scriptJoga);
     }
-    if (e.selecao == 0){
+    if (((validaJogada(e))==0) || (e.selecao == 0)){
     	char scriptHint[10240];
-    	sprintf(scriptHint,QUERY,SCRIPT,e.mao[0],e.mao[1], e.mao[2], e.mao[3], e.tamanho[0], e.tamanho[1], e.tamanho[2], e.tamanho[3],hint(e.selecao,e.uJogada,e.mao[0]),e.uJogada,e.uJogador,e.acao,0,e.bots[0],e.bots[1],e.bots[2]);
+    	sprintf(scriptHint,QUERY,SCRIPT,e.mao[0],e.mao[1], e.mao[2], e.mao[3], e.tamanho[0], e.tamanho[1], e.tamanho[2], e.tamanho[3],hint(0,e.uJogada,e.mao[0]),e.uJogada,e.uJogador,e.acao,0,e.bots[0],e.bots[1],e.bots[2]);
         printf("<a xlink:href = \"%s\"><image x=\"590\" y=\"750\" height=\"40\" width=\"206\" xlink:href = http://127.0.0.1/cards/hint.png /></a>\n", scriptHint);
     }
 }
@@ -261,11 +259,11 @@ void imprime_botoes(ESTADO e) {
 @param path	o URL correspondente à pasta que contém todas as cartas
 @param x A coordenada x da carta
 @param y A coordenada y da carta
-@param ESTADO	O estado atual
+@param e	O estado atual
 @param naipe	O naipe da carta (inteiro entre 0 e 3)
 @param valor	O valor da carta (inteiro entre 0 e 12)
+@param m A mão do jogador (inteiro entre 0 a 3, e 7)
 */
-//@param jogador  ??  
 
 void imprime_carta(char const *path, int x, int y, ESTADO e, int naipe, int valor, int m) {
 	char const *suit = NAIPES;
@@ -284,8 +282,11 @@ void imprime_carta(char const *path, int x, int y, ESTADO e, int naipe, int valo
 
 }
 
-/**
+/** \brief Imprime o html correspondente a todo o jogo
 
+@param path O URL correspondente à pasta que contém todas as cartas
+@param e O estado atual
+@param w Jogador vencedor, se houver (inteiro de 0 a 4, sendo que é igual a 4 quando não há vencedor)
 */
 void imprime(char const *path, ESTADO e, int w) {
 	int n, v, m;
@@ -293,7 +294,7 @@ void imprime(char const *path, ESTADO e, int w) {
     int X[7]={220,680,220,40,500,360,150};
     int Y[7]={660,200,20,200,340,160,340};
 	printf("<svg height = \"800\" width = \"800\">\n");
-	printf("<rect x = \"0\" y = \"0\" height = \"800\" width = \"800\" style = \"fill:#007700\"/>\n");
+	printf("<rect x = \"0\" y = \"0\" height = \"800\" width = \"800\" xlink:href = \"%s/background.jpg\"/>\n", path);
 
     for (m=0; m<4;m++) {
         x=X[m],y=Y[m];
@@ -308,9 +309,9 @@ void imprime(char const *path, ESTADO e, int w) {
 		    }
         }
     }
-    
+
     imprime_botoes(e);
-    
+
     for(m=0;m<3;m++) {
         x=X[4+m],y=Y[4+m];
         if (e.bots[m]!=0) {
@@ -331,6 +332,11 @@ void imprime(char const *path, ESTADO e, int w) {
     printf("</svg>\n");
 }
 
+/** \brief Imprime o html no caso de alguém ter ganho
+
+@param winner O jogador vencedor (inteiro de 0 a 4, sendo 4 quando ainda ninguém venceu)
+*/
+
 void win (int winner) {
     if (winner!=4) {
         if (winner==0) printf("<image x = \"0\" y = \"0\" height = \"800\" width = \"800\" xlink:href = \"%s/winner.gif\" /></a>\n", BARALHO);
@@ -339,6 +345,11 @@ void win (int winner) {
     }
 }
 
+/** \brief Baralha as cartas dos jogadores no início do jogo
+
+@param m Mão do jogador
+@param n Tamanho da mão do jogador
+*/
 void baralha (long long unsigned int* m, int* n) {
     int naipe,val,r;
     srandom(time(NULL));
@@ -353,11 +364,21 @@ void baralha (long long unsigned int* m, int* n) {
     }
 }
 
+/** \brief Determina qual é o próximo jogador
+
+@param uj Último jogador
+*/
 int proxJogador (int uj){
 	if (uj==3) return 0;
 	else return (uj+1);
 }
 
+/** \brief Dá uma pista ao jogador sobre o que deve fazer a seguir
+
+@param sel Seleção atual do jogador
+@param uJogada Última jogada feita
+@mao Mão do jogador
+*/
 long long unsigned int hint (long long unsigned int sel, long long unsigned int uJogada, long long unsigned int mao){
 int numCartas;
 numCartas = contaUns(uJogada);
@@ -387,8 +408,8 @@ long long unsigned int ajudaUma (long long unsigned int sel, long long unsigned 
 }
 
 long long unsigned int ajudaDuas (long long unsigned int sel, long long unsigned int uJogada, long long unsigned int mao){
-   int naipe;        
-   int ultMCarta = indiNumCarta(uJogada,2); //indice da carta mais alta
+   int naipe;
+   int ultMCarta = indiNumCarta(uJogada,2);
    int nm = naipe_indice (ultMCarta);
    int vm = valor_indice (ultMCarta);
    if (nm!=3 && numCartasValor(mao,vm)==2){
@@ -400,7 +421,7 @@ long long unsigned int ajudaDuas (long long unsigned int sel, long long unsigned
      for(v=vm+1;v<13 && numCartasValor(mao,v)<2;v++);
      if (v==13) return 0;
      else {
-        int i=0; //vai contar o numero de cartas ja na selecao
+        int i=0;
         for (naipe = 0;naipe<4 && i<2;naipe++)
            if (carta_existe(mao,naipe,v)) {sel = add_carta(sel,naipe,v);i++;}
          return sel;
@@ -409,13 +430,13 @@ long long unsigned int ajudaDuas (long long unsigned int sel, long long unsigned
 }
 
 long long unsigned int ajudaTres (long long unsigned int sel, long long unsigned int uJogada, long long unsigned int mao){
-   int ultMCarta = indiNumCarta(uJogada,3); //indice da carta mais alta
+   int ultMCarta = indiNumCarta(uJogada,3);
    int vm = valor_indice (ultMCarta);
    int v;
    for(v=vm+1;v<13 && numCartasValor(mao,v)<3;v++);
    if (v==13) return 0;
    else {
-       int i=0; //vai contar o numero de cartas ja na selecao
+       int i=0;
       int naipe;
        for (naipe = 0;naipe<4 && i<3;naipe++)
            if (carta_existe(mao,naipe,v)) {sel = add_carta(sel,naipe,v);i++;}
@@ -430,9 +451,9 @@ long long unsigned int ajudaMJogada (long long unsigned int sel, long long unsig
       int i=0;
       for (naipe = 0;naipe<4 && i<3;naipe++)
          if (carta_existe(mao,naipe,val)) {sel = add_carta(sel,naipe,val);i++;}
-     } 
+     }
     else if (combinacao2(mao)!=0){
-      int i=0; //vai contar o numero de cartas ja na selecao
+      int i=0;
       int naipe;
       int val = combinacao2 (mao);
       for (naipe = 0;naipe<4 && i<2;naipe++)
@@ -443,7 +464,7 @@ long long unsigned int ajudaMJogada (long long unsigned int sel, long long unsig
         for (i=0;i<52 && !carta_existe_indice(mao,i);i++);
         sel = add_carta_indice (sel,i);
     }
-    return sel;	
+    return sel;
 }
 
 void jogar(long long unsigned int *mao, int* t, long long unsigned int* sel,long long unsigned int* ujogada, int* ujogador ,char* c,int* pass,long long unsigned int* bots) {
@@ -487,7 +508,7 @@ void jogaMjogada (long long unsigned int *mao, int* t, long long unsigned int* s
         bots[jogA-1] = *ujogada;
     }
     else if (combinacao2(maoA)!=0){
-        int i=0; //vai contar o numero de cartas ja na selecao
+        int i=0;
         int naipe;
         int val = combinacao2 (maoA);
             for (naipe = 0;naipe<4 && i<2;naipe++)
@@ -544,7 +565,7 @@ void jogaDuas (long long unsigned int *mao, int* t, long long unsigned int* sel,
     int naipe;
     int jogA = proxJogador(*ujogador);
     long long unsigned int maoA = mao[jogA];
-    int ultMCarta = indiNumCarta(*ujogada,2); //indice da carta mais alta
+    int ultMCarta = indiNumCarta(*ujogada,2);
     int nm = naipe_indice (ultMCarta);
     int vm = valor_indice (ultMCarta);
     if (nm!=3 && numCartasValor(maoA,vm)==2){
@@ -567,7 +588,7 @@ void jogaDuas (long long unsigned int *mao, int* t, long long unsigned int* sel,
             bots[jogA-1] = 0;
         }
    	    else {
-            int i=0; //vai contar o numero de cartas ja na selecao
+            int i=0;
             for (naipe = 0;naipe<4 && i<2;naipe++)
                 if (carta_existe(maoA,naipe,v)) {*sel = add_carta(*sel,naipe,v);i++;}
                 mao[jogA] = del_cartas(*sel,mao[jogA]);
@@ -585,7 +606,7 @@ void jogaDuas (long long unsigned int *mao, int* t, long long unsigned int* sel,
 void jogaTres (long long unsigned int *mao, int* t, long long unsigned int* sel,long long unsigned int* ujogada, int* ujogador ,char* c,int*pass,long long unsigned int* bots) {
     int jogA = proxJogador(*ujogador);
     long long unsigned int maoA = mao[jogA];
-    int ultMCarta = indiNumCarta(*ujogada,3); //indice da carta mais alta
+    int ultMCarta = indiNumCarta(*ujogada,3);
     int vm = valor_indice (ultMCarta);
     int v;
     for(v=vm+1;v<13 && numCartasValor(maoA,v)<3;v++);
@@ -594,7 +615,7 @@ void jogaTres (long long unsigned int *mao, int* t, long long unsigned int* sel,
         bots[jogA-1] = 0;
     }
     else {
-        int i=0; //vai contar o numero de cartas ja na selecao
+        int i=0;
         int naipe;
         for (naipe = 0;naipe<4 && i<3;naipe++)
             if (carta_existe(maoA,naipe,v)) {*sel = add_carta(*sel,naipe,v);i++;}
