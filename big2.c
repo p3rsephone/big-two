@@ -124,8 +124,7 @@ char *da_estado(ESTADO e) {
     return estado;
 }
 
-/**
-Devolve o índice da carta
+/** \brief Devolve o índice da carta
 @param naipe	O naipe da carta (inteiro entre 0 e 3)
 @param valor	O valor da carta (inteiro entre 0 e 12)
 @return		O índice correspondente à carta
@@ -203,7 +202,7 @@ long long unsigned int del_cartas(long long unsigned int cartas, long long unsig
 
 /** \brief Seleciona ou remove da seleção uma carta
 
-@param ESTADO    O estado do jogo
+@param e    O estado do jogo
 @param naipe    O naipe da carta (inteiro entre 0 e 3)
 @param valor    O valor da carta (inteiro entre 0 e 12)
 @return    A mão seleção alterada
@@ -345,7 +344,7 @@ void win (int winner) {
     }
 }
 
-/** \brief Baralha as cartas dos jogadores no início do jogo
+/** \brief Baralha e distribui as cartas dos jogadores no início do jogo
 
 @param m Mão do jogador
 @param n Tamanho da mão do jogador
@@ -367,6 +366,7 @@ void baralha (long long unsigned int* m, int* n) {
 /** \brief Determina qual é o próximo jogador
 
 @param uj Último jogador
+@return O próximo jogador
 */
 int proxJogador (int uj){
 	if (uj==3) return 0;
