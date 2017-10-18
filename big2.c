@@ -108,7 +108,12 @@ void inicializa (long long unsigned int *mao, int* t,long long unsigned int* ujo
    for (jog=1;jog<=3 && !(carta_existe(mao[jog],0,0));jog++);
    if (jog<4) {
       for (naipe = 0;naipe<=3 && i<3;naipe++){
-            if (carta_existe(mao[jog],naipe,0)) {mao[jog]=rem_carta(mao[jog],naipe,0);*ujogada=add_carta(*ujogada,naipe,0);bots[jog-1]=add_carta(bots[jog-1],naipe,0);t[jog]--;}
+            if (carta_existe(mao[jog],naipe,0)) {
+		    mao[jog]=rem_carta(mao[jog],naipe,0);
+		    *ujogada=add_carta(*ujogada,naipe,0);
+		    bots[jog-1]=add_carta(bots[jog-1],naipe,0);
+		    t[jog]--;
+	    }
       }
       bots[jog-1]=*ujogada;
    }
@@ -358,7 +363,10 @@ void baralha (long long unsigned int* m, int* n) {
             if (n[r] < 13) {
                 m[r]=add_carta (m[r],naipe,val);
                 n[r]++;
-            } else val--;
+            } 
+	    else{
+		val--;
+	    }
         }
     }
 }
